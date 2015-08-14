@@ -1,82 +1,39 @@
 import sys
 import csv
-import time
 import pyHook
-import win32api
-import win32con
+
 from PyQt4 import QtCore, QtGui, uic
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
 
-class WorkThread(QtCore.QThread):
-    def __init__(self, parent = None):
-        QtCore.QThread.__init__(self, parent)
+# import UI files created with pyuic4
+from MainUI import *
+from HotkeyUI import *
 
-        self.exiting = False
-        self.sequence = list()
-        self.reruncount = 1
-        self.rerundelay = 0
+# workthread which executes click sequences
+from WorkThread import *
 
-    def __del__(self):
-        self.exiting = True
-        self.wait()
+# class for used for stdout redirecting
+class EmittingStream(QtCore.QObject):
+    textWritten = QtCore.pyqtSignal(str)
+    def write(self, text):
+        self.textWritten.emit(str(text))
+    def writelines(self, l): 
+        map(self.write, l) 
 
-    def startclicking(self, seq, rerun, delay):
-        self.exiting = False
-        self.sequence = seq
-        self.reruncount = rerun
-        self.rerundelay = delay
-        self.start()
-
-    def stopclicking(self):
-        self.exiting = True
-
-    def run(self):
-
-        for i in range(self.reruncount):
-            counter = 0            
-            while counter < len(self.sequence) and self.exiting != True:
-                self.emit(QtCore.SIGNAL("output(int)"), counter / 5)
-
-                clicktype = self.sequence[counter][0]
-                x = int(self.sequence[counter][1])
-                y = int(self.sequence[counter][2])
-                duration = float(self.sequence[counter][3])
-                repeat = int(self.sequence[counter][4])
-
-                win32api.SetCursorPos((x,y))
-
-                for j in range(repeat):
-                    if clicktype == "Left Click":
-                        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,x,y,0,0)
-                        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,x,y,0,0)
-                    elif clicktype == "Middle Click":
-                        win32api.mouse_event(win32con.MOUSEEVENTF_MIDDLEDOWN,x,y,0,0)
-                        win32api.mouse_event(win32con.MOUSEEVENTF_MIDDLEUP,x,y,0,0)
-                    elif clicktype == "Right Click":
-                        win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,x,y,0,0)
-                        win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,x,y,0,0)
-                    time.sleep(duration / 1000)
-
-                counter += 1
-
-            if self.exiting == True:
-                break
-            if self.reruncount == 6: #Reruncount of 6 means that the user chose to run this indefinitely
-                i = 0
-
-            time.sleep(self.rerundelay)
-
-
-autoclicker_ui = uic.loadUiType("AutoClicker.ui")[0]
-
-#Self declared exceptions:
+# self declared exceptions:
 class InvalidComboBoxValue(Exception):
     pass
 
-class AutoClicker(QtGui.QMainWindow, autoclicker_ui):
+# main program
+class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
 
         self.setupUi(self)
+
+        # redirect stdout
+        sys.stdout = EmittingStream(textWritten=self.normalOutputWritten)        
 
         # member variables
         self.title = "AutoClicker v.1.0"
@@ -84,7 +41,9 @@ class AutoClicker(QtGui.QMainWindow, autoclicker_ui):
         self.selectedCol  = -1
         self.recording    = False
         self.picking      = False
+        self.hotkeychange = False
         self.savePending  = False
+        self.timer        = QtCore.QTimer()
 
         # create the hook mananger, register callbacks and hook to mouse and keyboard events
         hm = pyHook.HookManager()
@@ -107,13 +66,20 @@ class AutoClicker(QtGui.QMainWindow, autoclicker_ui):
         self.btnMoveDown.clicked.connect(self.buttonMoveDownPressed)
         self.actionAbout.triggered.connect(self.aboutActionTriggered)
         self.btnStartStopSequence.clicked.connect(self.buttonStartStopPressed)
-
         self.table.itemClicked.connect(self.cellClicked)
+        self.timer.timeout.connect(self.updateMouseCoordstoStatusBar)
+
+        self.btnHotkey.clicked.connect(self.hotkeyChangeRequested)
 
         self.thread = WorkThread()
         self.thread.finished.connect(self.updateUI)
         self.thread.terminated.connect(self.updateUI)
         self.connect(self.thread, QtCore.SIGNAL("output(int)"), self.highlightRow)
+        
+        self.timer.start(100)
+
+    def __del__(self):
+        sys.stdout = sys.__stdout__
 
     #Triggered by pyhook library
     def OnMouseEvent(self, event):
@@ -149,7 +115,7 @@ class AutoClicker(QtGui.QMainWindow, autoclicker_ui):
                 self.addTableEntry(click, xcoord, ycoord, delay, 1)
 
         return True
-        
+
     def OnKeyboardEvent(self, event):
         if event.Key == "F12" and self.thread.isRunning() == True:
             self.thread.stopclicking()
@@ -160,8 +126,31 @@ class AutoClicker(QtGui.QMainWindow, autoclicker_ui):
 
         return True
 
+    def normalOutputWritten(self, text):       
+        if len(text) == 1 and ord(str(text)) == 10:
+            return
+        self.statusBar.showMessage(text, 0)
+
     def highlightRow(self, index):
         self.table.selectRow(index)
+
+    def updateMouseCoordstoStatusBar(self):
+        pos = QPoint(QCursor.pos())
+        print "Mouse Position: (%d, %d)" % (pos.x(), pos.y())
+
+    def hotkeyChangeRequested(self):
+        hotkeychange = True
+
+        dialog = QDialog()
+        dialog.ui = Ui_HotKey()
+        dialog.ui.setupUi(dialog)
+        dialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+
+        if dialog.exec_():
+            print "Hotkey Changed"
+
+        hotkeychange = False
+
 
     def aboutActionTriggered(self):
         QtGui.QMessageBox.about(self, "About", "Mouse Autoclicker v1.0\nA tool to automatize mouse clicks.\nAuthor: Kari Vatjus-Anttila\nEmail: kari.vatjusanttila@gmail.com")
@@ -197,7 +186,6 @@ class AutoClicker(QtGui.QMainWindow, autoclicker_ui):
             self.btnDelete.setEnabled(False)
 
             self.savePending = True
-
         except ValueError:
             QtGui.QMessageBox.question(self, 'Error', "Invalid values given. Please check your parameters.", QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
             return
@@ -214,7 +202,6 @@ class AutoClicker(QtGui.QMainWindow, autoclicker_ui):
             click = self.cmbClickType.currentIndex()
 
             self.updateTableEntry(self.selectedRow, click, xcoord, ycoord, duration, repeat)
-
             self.selectedRow = -1
             self.selectedCol = -1
             self.btnMoveDown.setEnabled(False)
@@ -222,15 +209,12 @@ class AutoClicker(QtGui.QMainWindow, autoclicker_ui):
             self.btnDelete.setEnabled(False)
 
     def buttonLoadPressed(self):
-
         filename = QtGui.QFileDialog.getOpenFileName(self, "Load Autoclick Sequence", "", "Sequence files (*.seq)", "Sequence files (*.seq)")
-
         if filename == "":
             return
-
         if self.savePending == True or self.table.rowCount() != 0:
             if self.confirm("About to clear the current sequence. Are you sure?") == True:
-                self.clearTable()           
+                self.clearTable()
             else:
                 return
 
@@ -255,7 +239,7 @@ class AutoClicker(QtGui.QMainWindow, autoclicker_ui):
     def startRecording(self):
         if self.savePending == True or self.table.rowCount() != 0:
             if self.confirm("About to clear the current sequence. Are you sure?") == True:
-                self.clearTable()           
+                self.clearTable()
             else:
                 return
 
@@ -280,6 +264,7 @@ class AutoClicker(QtGui.QMainWindow, autoclicker_ui):
 
         if self.table.rowCount() == 0:
             self.savePending = False
+            self.btnStartStopSequence.setEnabled(False)
 
         self.recording = False
 
@@ -300,18 +285,18 @@ class AutoClicker(QtGui.QMainWindow, autoclicker_ui):
 
         if row != 0:
             self.table.insertRow(row - 1)
-            for i in range(self.table.columnCount()):       
+            for i in range(self.table.columnCount()):
                 self.table.setItem(row - 1, i, self.table.takeItem(row + 1, i))
             self.table.removeRow(row + 1)
             self.table.setCurrentCell(row - 1, 0)
-            self.table.selectRow(self.table.currentRow())    
+            self.table.selectRow(self.table.currentRow())
 
     def buttonMoveDownPressed(self):
         row = self.table.currentRow()
 
         if row != self.table.rowCount() - 1:
-            self.table.insertRow(row + 2) 
-            for i in range(self.table.columnCount()):       
+            self.table.insertRow(row + 2)
+            for i in range(self.table.columnCount()):
                 self.table.setItem(row + 2, i, self.table.takeItem(row, i))
             self.table.removeRow(row)
             self.table.setCurrentCell(row + 1, 0)
@@ -330,8 +315,8 @@ class AutoClicker(QtGui.QMainWindow, autoclicker_ui):
 
     def buttonClearPressed(self):
         if self.confirm("About to clear the current sequence. Are you sure?") == True:
-            self.clearTable()     
-            self.savePending = False     
+            self.clearTable()
+            self.savePending = False
         else:
             return
 
@@ -359,7 +344,7 @@ class AutoClicker(QtGui.QMainWindow, autoclicker_ui):
         elif clicktype == "Middle Click":
             self.cmbClickType.setCurrentIndex(2)
         else:
-            self.cmbClickType.setCurrentIndex(3)                   
+            self.cmbClickType.setCurrentIndex(3)
 
     def clearTable(self):
         while self.table.rowCount() > 0:
@@ -426,20 +411,18 @@ class AutoClicker(QtGui.QMainWindow, autoclicker_ui):
         for w in self.findChildren(QtGui.QPushButton):
             w.setEnabled(False)
         for w in self.findChildren(QtGui.QLineEdit):
-            w.setEnabled(False)            
+            w.setEnabled(False)
 
         self.cmbClickType.setEnabled(False)
-        self.cmbRerun.setEnabled(False)
         self.table.setEnabled(False)
 
     def enableUI(self):
         for w in self.findChildren(QtGui.QPushButton):
             w.setEnabled(True)
         for w in self.findChildren(QtGui.QLineEdit):
-            w.setEnabled(True)            
+            w.setEnabled(True)
 
         self.cmbClickType.setEnabled(True)
-        self.cmbRerun.setEnabled(True)
         self.table.setEnabled(True)
 
     def updateUI(self):
@@ -470,12 +453,12 @@ class AutoClicker(QtGui.QMainWindow, autoclicker_ui):
             writer.writerows(list)
 
         self.savePending = False
-        
+
     def confirm(self, question):
         reply = QtGui.QMessageBox.question(self, 'Confirmation Required', question, QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
 
         if reply == QtGui.QMessageBox.Yes:
-            return True    
+            return True
         else:
             return False
 

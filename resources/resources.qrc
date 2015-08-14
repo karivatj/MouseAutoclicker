@@ -1,0 +1,10 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>../images/ctrl_active.png</file>
+    <file>../images/alt_active.png</file>
+    <file>../images/shift_active.png</file>
+    <file>../images/ctrl_inactive.png</file>
+    <file>../images/alt_inactive.png</file>
+    <file>../images/shift_inactive.png</file>
+</qresource>
+</RCC>

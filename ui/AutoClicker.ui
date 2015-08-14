@@ -2,17 +2,20 @@
 <ui version="4.0">
  <class>AutoClicker_Window</class>
  <widget class="QMainWindow" name="AutoClicker_Window">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>760</width>
+    <width>880</width>
     <height>500</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>760</width>
+    <width>880</width>
     <height>500</height>
    </size>
   </property>
@@ -416,12 +419,12 @@
            <item>
             <widget class="QLabel" name="label_4">
              <property name="text">
-              <string>Rerun sequence</string>
+              <string>Rerun sequence (0 = infinite)</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QSpinBox" name="spinBox">
+            <widget class="QSpinBox" name="spinRerun">
              <property name="maximum">
               <number>1000</number>
              </property>
@@ -433,7 +436,7 @@
            <item>
             <widget class="QLabel" name="label_3">
              <property name="text">
-              <string>time. Delay between reruns:</string>
+              <string>time(s). Delay between reruns:</string>
              </property>
             </widget>
            </item>
@@ -465,9 +468,22 @@
             </spacer>
            </item>
            <item>
-            <widget class="QLabel" name="label_6">
+            <widget class="QPushButton" name="btnHotkey">
              <property name="text">
-              <string>(Note: F12 stops script recording / execution)</string>
+              <string>F12</string>
+             </property>
+             <property name="default">
+              <bool>false</bool>
+             </property>
+             <property name="flat">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblHotkey">
+             <property name="text">
+              <string>stops execution. Click to change hotkey</string>
              </property>
             </widget>
            </item>
@@ -485,7 +501,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>760</width>
+     <width>880</width>
      <height>21</height>
     </rect>
    </property>
@@ -494,12 +510,23 @@
      <string>Menu</string>
     </property>
     <addaction name="actionAbout"/>
+    <addaction name="actionBind_Script_Abort_Hotkey"/>
    </widget>
    <addaction name="menuMenu"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
   </widget>
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionBind_Script_Abort_Hotkey">
+   <property name="text">
+    <string>Bind Script Abort Hotkey</string>
    </property>
   </action>
  </widget>
