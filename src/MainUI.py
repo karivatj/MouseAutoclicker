@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'AutoClicker.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Sun Aug 16 22:15:52 2015
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -205,6 +206,7 @@ class Ui_AutoClicker_Window(object):
         spacerItem5 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem5)
         self.btnHotkey = QtGui.QPushButton(self.groupClickSequence)
+        self.btnHotkey.setEnabled(False)
         self.btnHotkey.setDefault(False)
         self.btnHotkey.setFlat(False)
         self.btnHotkey.setObjectName(_fromUtf8("btnHotkey"))
@@ -231,7 +233,6 @@ class Ui_AutoClicker_Window(object):
         self.actionBind_Script_Abort_Hotkey = QtGui.QAction(AutoClicker_Window)
         self.actionBind_Script_Abort_Hotkey.setObjectName(_fromUtf8("actionBind_Script_Abort_Hotkey"))
         self.menuMenu.addAction(self.actionAbout)
-        self.menuMenu.addAction(self.actionBind_Script_Abort_Hotkey)
         self.menuBar.addAction(self.menuMenu.menuAction())
 
         self.retranslateUi(AutoClicker_Window)
@@ -250,7 +251,7 @@ class Ui_AutoClicker_Window(object):
         AutoClicker_Window.setTabOrder(self.btnDelete, self.btnClear)
 
     def retranslateUi(self, AutoClicker_Window):
-        AutoClicker_Window.setWindowTitle(_translate("AutoClicker_Window", "AutoClicker v.1.0", None))
+        AutoClicker_Window.setWindowTitle(_translate("AutoClicker_Window", "Mouse Autoclicker v.1.0b", None))
         self.groupAddEdit.setTitle(_translate("AutoClicker_Window", "Add / Edit mouse clicks", None))
         self.btnRecord.setText(_translate("AutoClicker_Window", "Record Sequence", None))
         self.btnPick.setText(_translate("AutoClicker_Window", "Pick", None))

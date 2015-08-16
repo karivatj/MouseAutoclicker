@@ -9,6 +9,7 @@ from PyQt4.QtCore import *
 # import UI files created with pyuic4
 from MainUI import *
 from HotkeyUI import *
+from AboutUI import *
 
 # workthread which executes click sequences
 from WorkThread import *
@@ -153,7 +154,11 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
 
 
     def aboutActionTriggered(self):
-        QtGui.QMessageBox.about(self, "About", "Mouse Autoclicker v1.0\nA tool to automatize mouse clicks.\nAuthor: Kari Vatjus-Anttila\nEmail: kari.vatjusanttila@gmail.com")
+        dialog = QDialog()
+        dialog.ui = Ui_About()
+        dialog.ui.setupUi(dialog)
+        dialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        dialog.exec_()
 
     def buttonPickPressed(self):
         self.setWindowState(QtCore.Qt.WindowMinimized)

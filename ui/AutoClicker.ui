@@ -20,7 +20,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>AutoClicker v.1.0</string>
+   <string>Mouse Autoclicker v.1.0b</string>
   </property>
   <property name="windowOpacity">
    <double>1.000000000000000</double>
@@ -469,6 +469,9 @@
            </item>
            <item>
             <widget class="QPushButton" name="btnHotkey">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>F12</string>
              </property>
@@ -510,7 +513,6 @@
      <string>Menu</string>
     </property>
     <addaction name="actionAbout"/>
-    <addaction name="actionBind_Script_Abort_Hotkey"/>
    </widget>
    <addaction name="menuMenu"/>
   </widget>
