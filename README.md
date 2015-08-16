@@ -1,5 +1,5 @@
-# MouseAutoClicker
-Mouseclick Automation Software v1.0 by Kari Vatjus-Anttila made with Python 2.7, PyQT4 and pals.
+# Mouse Autoclicker
+Mouseclick Automation Tool by Kari Vatjus-Anttila made with Python 2.7, PyQT4 and pals.
 
 A tool to automate arbitrary mouseclick sequences.
 
