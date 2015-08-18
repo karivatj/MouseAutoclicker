@@ -37,7 +37,7 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
         sys.stdout = EmittingStream(textWritten=self.normalOutputWritten)        
 
         # member variables
-        self.title = "AutoClicker v.1.0"
+        self.title = "Mouse Autoclicker v.1.0b"
         self.selectedRow  = -1
         self.selectedCol  = -1
         self.recording    = False
@@ -429,6 +429,8 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
 
         self.cmbClickType.setEnabled(True)
         self.table.setEnabled(True)
+        #Atm Disable Hotkey button:
+        self.btnHotkey.setEnabled(False)
 
     def updateUI(self):
         self.enableUI()
