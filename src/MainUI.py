@@ -206,7 +206,7 @@ class Ui_AutoClicker_Window(object):
         spacerItem5 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem5)
         self.btnHotkey = QtGui.QPushButton(self.groupClickSequence)
-        self.btnHotkey.setEnabled(False)
+        self.btnHotkey.setEnabled(True)
         self.btnHotkey.setDefault(False)
         self.btnHotkey.setFlat(False)
         self.btnHotkey.setObjectName(_fromUtf8("btnHotkey"))
