@@ -10,6 +10,8 @@ from PyQt4.QtCore import *
 from MainUI import *
 from HotkeyUI import *
 from AboutUI import *
+import HotKey
+import Keys
 
 # workthread which executes click sequences
 from WorkThread import *
@@ -46,13 +48,23 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
         self.savePending  = False
         self.timer        = QtCore.QTimer()
 
+        #Hotkey options
+        self.ctrlModifier  = True
+        self.altModifier   = False
+        self.shiftModifier = False
+        self.hotkey        = 'S'
+
         # create the hook mananger, register callbacks and hook to mouse and keyboard events
         hm = pyHook.HookManager()
         hm.MouseAllButtonsDown = self.OnMouseEvent
         hm.MouseAllButtonsUp = self.OnMouseEvent
-        hm.KeyDown = self.OnKeyboardEvent
+        hm.KeyDown = self.OnKeyboardPressEvent
+        hm.KeyUp = self.OnKeyboardReleaseEvent
         hm.HookKeyboard()
         hm.HookMouse()
+        self.ctrlPressed = False
+        self.altPressed = False
+        self.shiftPressed = False
 
         # connect signals / slots of UI controls
         self.btnAdd.clicked.connect(self.buttonAddPressed)
@@ -76,6 +88,8 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
         self.thread.finished.connect(self.updateUI)
         self.thread.terminated.connect(self.updateUI)
         self.connect(self.thread, QtCore.SIGNAL("output(int)"), self.highlightRow)
+
+        self.updateHotkeyButton()
         
         self.timer.start(100)
 
@@ -84,7 +98,6 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
 
     #Triggered by pyhook library
     def OnMouseEvent(self, event):
-
         if self.picking == True:
             self.picking = False
             self.txtXcoord.setText(str(event.Position[0]))
@@ -99,7 +112,6 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
 
             self.setWindowState(QtCore.Qt.WindowActive)
             return False
-
         if self.recording == True:
             xcoord = event.Position[0]
             ycoord = event.Position[1]
@@ -115,22 +127,61 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
             if click != 0:
                 self.addTableEntry(click, xcoord, ycoord, delay, 1)
 
+        return True   
+
+    def OnKeyboardPressEvent(self, event):
+        #Update modifier key status
+        if event.Key == "Lcontrol" or event.Key == "Rcontrol":
+            self.ctrlPressed = True
+        if event.Key == "Lmenu" or event.Key == "Rmenu":
+            self.altPressed = True
+        if event.Key == "Lshift" or event.Key == "Rshift":
+            self.shiftPressed = True
+
+        #Check if mathching hotkey was pressed
+        if self.ctrlModifier == True and self.ctrlPressed == False:
+            return True
+        if self.altModifier == True and self.altPressed == False:
+            return True
+        if self.shiftModifier == True and self.shiftPressed == False:
+            return True
+        if event.Key.upper() != self.hotkey.upper():
+            return True
+
+        #Hotkey matched. Do proper actions
+        if self.recording == True:
+            self.stopRecording()
+        if self.thread.isRunning() == True:
+            self.thread.stopclicking()
+            win32api.SetCursorPos((self.x() + self.width() / 2, self.y() + self.height() / 2))   
+
         return True
 
-    def OnKeyboardEvent(self, event):
-        if event.Key == "F12" and self.thread.isRunning() == True:
-            self.thread.stopclicking()
-            win32api.SetCursorPos((self.x() + self.width() / 2, self.y() + self.height() / 2))
-
-        if event.Key == "F12" and self.recording == True:
-            self.stopRecording()
-
+    def OnKeyboardReleaseEvent(self, event):
+        if event.Key == "Lcontrol" or event.Key == "Rcontrol":
+            self.ctrlPressed = False
+        if event.Key == "Lmenu" or event.Key == "Rmenu":
+            self.altPressed = False
+        if event.Key == "Lshift" or event.Key == "Rshift":
+            self.shiftPressed = False
         return True
 
     def normalOutputWritten(self, text):       
         if len(text) == 1 and ord(str(text)) == 10:
             return
         self.statusBar.showMessage(text, 0)
+
+    def updateHotkeyButton(self):
+        hotkeytext = ""
+        if self.ctrlModifier == True:
+            hotkeytext += "CTRL+"
+        if self.altModifier == True:
+            hotkeytext += "ALT+"
+        if self.shiftModifier == True:
+            hotkeytext += "SHIFT+"
+        hotkeytext += self.hotkey
+
+        self.btnHotkey.setText(hotkeytext)
 
     def highlightRow(self, index):
         self.table.selectRow(index)
@@ -140,18 +191,15 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
         print "Mouse Position: (%d, %d)" % (pos.x(), pos.y())
 
     def hotkeyChangeRequested(self):
-        hotkeychange = True
-
-        dialog = QDialog()
-        dialog.ui = Ui_HotKey()
-        dialog.ui.setupUi(dialog)
-        dialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-
+        dialog = HotKey.HotKeyDialog()
+        dialog.setHotkey([self.ctrlModifier, self.altModifier, self.shiftModifier, self.hotkey])
         if dialog.exec_():
-            print "Hotkey Changed"
-
-        hotkeychange = False
-
+            result = dialog.getHotKey()
+            self.ctrlModifier  = result[0]
+            self.altModifier   = result[1]
+            self.shiftModifier = result[2]
+            self.hotkey        = result[3]
+            self.updateHotkeyButton()
 
     def aboutActionTriggered(self):
         dialog = QDialog()
