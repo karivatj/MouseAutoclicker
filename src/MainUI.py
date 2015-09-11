@@ -251,7 +251,7 @@ class Ui_AutoClicker_Window(object):
         AutoClicker_Window.setTabOrder(self.btnDelete, self.btnClear)
 
     def retranslateUi(self, AutoClicker_Window):
-        AutoClicker_Window.setWindowTitle(_translate("AutoClicker_Window", "Mouse Autoclicker v.1.0b", None))
+        AutoClicker_Window.setWindowTitle(_translate("AutoClicker_Window", "Mouse Autoclicker v.1.1", None))
         self.groupAddEdit.setTitle(_translate("AutoClicker_Window", "Add / Edit mouse clicks", None))
         self.btnRecord.setText(_translate("AutoClicker_Window", "Record Sequence", None))
         self.btnPick.setText(_translate("AutoClicker_Window", "Pick", None))

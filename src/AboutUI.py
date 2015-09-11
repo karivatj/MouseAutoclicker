@@ -67,7 +67,7 @@ class Ui_About(object):
 
     def retranslateUi(self, About):
         About.setWindowTitle(_translate("About", "About", None))
-        self.lblHeadline.setText(_translate("About", "Mouse Autoclicker v1.0b", None))
+        self.lblHeadline.setText(_translate("About", "Mouse Autoclicker v1.1", None))
         self.lblSummary.setText(_translate("About", "A tool to automatize mouse clicks.", None))
         self.lblInfo.setText(_translate("About", "Author: Kari Vatjus-Anttila\n"
 "Email: kari.vatjusanttila@gmail.com", None))

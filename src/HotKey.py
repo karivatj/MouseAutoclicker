@@ -26,9 +26,6 @@ class HotKeyDialog(QtGui.QDialog, Ui_HotKey):
         self.buttonBox.rejected.connect(self.rejected)
         self.destroyed.connect(self.rejected)
 
-    def __del__(self):
-        sys.stdout = sys.__stdout__
-
     def keyPressEvent(self, event):
         if event.modifiers() & QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Control:
             if self.ctrlActivated:
