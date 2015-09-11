@@ -60,12 +60,7 @@ class HotKeyDialog(QtGui.QDialog, Ui_HotKey):
             pass
 
     def getHotKey(self):
-        list = []
-        list.append(self.ctrlActivated)
-        list.append(self.altActivated)
-        list.append(self.shiftActivated)
-        list.append(self.hotkey)
-        return list
+        return [self.ctrlActivated, self.altActivated, self.shiftActivated, self.hotkey]
 
     def setHotkey(self, configuration):
         self.ctrlActivated  = configuration[0]
