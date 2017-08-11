@@ -2,9 +2,10 @@ import sys
 import csv
 import pyHook
 
-from PyQt4 import QtCore, QtGui, uic
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5 import QtCore, QtGui, uic, QtWidgets
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 
 # import UI files created with pyuic4
 from MainUI import *
@@ -29,9 +30,9 @@ class InvalidComboBoxValue(Exception):
     pass
 
 # main program
-class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
+class AutoClicker(QtWidgets.QMainWindow, Ui_AutoClicker_Window):
     def __init__(self, parent=None):
-        QtGui.QMainWindow.__init__(self, parent)
+        QtWidgets.QMainWindow.__init__(self, parent)
 
         self.setupUi(self)
 
@@ -86,8 +87,9 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
 
         self.thread = WorkThread()
         self.thread.finished.connect(self.updateUI)
-        self.thread.terminated.connect(self.updateUI)
-        self.connect(self.thread, QtCore.SIGNAL("output(int)"), self.highlightRow)
+        #self.thread.terminated.connect(self.updateUI)
+        self.thread.progress.connect(self.highlightRow)
+        #self.connect(self.thread, QtCore.SIGNAL("output(int)"), self.highlightRow)
 
         self.updateHotkeyButton()
         
@@ -188,7 +190,7 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
 
     def updateMouseCoordstoStatusBar(self):
         pos = QPoint(QCursor.pos())
-        print "Mouse Position: (%d, %d)" % (pos.x(), pos.y())
+        print("Mouse Position: (%d, %d)" % (pos.x(), pos.y()))
 
     def hotkeyChangeRequested(self):
         dialog = HotKey.HotKeyDialog()
@@ -240,10 +242,10 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
 
             self.savePending = True
         except ValueError:
-            QtGui.QMessageBox.question(self, 'Error', "Invalid values given. Please check your parameters.", QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
+            QtWidgets.QMessageBox.question(self, 'Error', "Invalid values given. Please check your parameters.", QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
             return
         except InvalidComboBoxValue:
-            QtGui.QMessageBox.question(self, 'Error', "Please choose a click type.", QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
+            QtWidgets.QMessageBox.question(self, 'Error', "Please choose a click type.", QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
             return
 
     def buttonUpdatePressed(self):
@@ -262,7 +264,7 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
             self.btnDelete.setEnabled(False)
 
     def buttonLoadPressed(self):
-        filename = QtGui.QFileDialog.getOpenFileName(self, "Load Autoclick Sequence", "", "Sequence files (*.seq)", "Sequence files (*.seq)")
+        filename = QtWidgets.QFileDialog.getOpenFileName(self, "Load Autoclick Sequence", "", "Sequence files (*.seq)", "Sequence files (*.seq)")
         if filename == "":
             return
         if self.savePending == True or self.table.rowCount() != 0:
@@ -275,7 +277,7 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
         self.enableUI()
 
     def buttonSavePressed(self):
-        filename = QtGui.QFileDialog.getSaveFileName(self, "Save sequence", "", "Sequence files (*.seq)", "Sequence files (*.seq)")
+        filename = QtWidgets.QFileDialog.getSaveFileName(self, "Save sequence", "", "Sequence files (*.seq)", "Sequence files (*.seq)")
 
         if filename == "":
             return
@@ -424,7 +426,7 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
         for i in range(len(list[0])):
             self.table.insertRow(i)
             for j in range(len(list[0][i])):
-                self.table.setItem(i , j, QtGui.QTableWidgetItem(str(list[0][i][j])))
+                self.table.setItem(i , j, QtWidgets.QTableWidgetItem(str(list[0][i][j])))
                 self.table.item(i, j).setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
 
     def updateTableEntry(self, row, click, xcoord, ycoord, duration, repeat):
@@ -438,11 +440,11 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
         self.insertRow(row, clicktype, xcoord, ycoord, duration, repeat)
 
     def insertRow(self, row, clicktype, xcoord, ycoord, duration, repeat):
-        self.table.setItem(row , 1, QtGui.QTableWidgetItem(str(xcoord)))
-        self.table.setItem(row , 2, QtGui.QTableWidgetItem(str(ycoord)))
-        self.table.setItem(row , 4, QtGui.QTableWidgetItem(str(repeat)))
-        self.table.setItem(row , 3, QtGui.QTableWidgetItem(str(duration)))
-        self.table.setItem(row , 0, QtGui.QTableWidgetItem(str(clicktype)))
+        self.table.setItem(row , 1, QtWidgets.QTableWidgetItem(str(xcoord)))
+        self.table.setItem(row , 2, QtWidgets.QTableWidgetItem(str(ycoord)))
+        self.table.setItem(row , 4, QtWidgets.QTableWidgetItem(str(repeat)))
+        self.table.setItem(row , 3, QtWidgets.QTableWidgetItem(str(duration)))
+        self.table.setItem(row , 0, QtWidgets.QTableWidgetItem(str(clicktype)))
         self.table.item(row, 0).setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
         self.table.item(row, 1).setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
         self.table.item(row, 2).setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
@@ -461,18 +463,18 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
             return "Left Click"
 
     def disableUI(self):
-        for w in self.findChildren(QtGui.QPushButton):
+        for w in self.findChildren(QtWidgets.QPushButton):
             w.setEnabled(False)
-        for w in self.findChildren(QtGui.QLineEdit):
+        for w in self.findChildren(QtWidgets.QLineEdit):
             w.setEnabled(False)
 
         self.cmbClickType.setEnabled(False)
         self.table.setEnabled(False)
 
     def enableUI(self):
-        for w in self.findChildren(QtGui.QPushButton):
+        for w in self.findChildren(QtWidgets.QPushButton):
             w.setEnabled(True)
-        for w in self.findChildren(QtGui.QLineEdit):
+        for w in self.findChildren(QtWidgets.QLineEdit):
             w.setEnabled(True)
 
         self.cmbClickType.setEnabled(True)
@@ -483,7 +485,7 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
         self.setWindowState(QtCore.Qt.WindowActive)
         self.setWindowTitle(self.title)
         self.btnStartStopSequence.setText("Start")
-        win32api.SetCursorPos((self.x() + self.width() / 2, self.y() + self.height() / 2))
+        win32api.SetCursorPos((int((self.x() + self.width() / 2)), int((self.y() + self.height() / 2))))
 
     def load(self, fileName):
         list = []
@@ -508,15 +510,15 @@ class AutoClicker(QtGui.QMainWindow, Ui_AutoClicker_Window):
         self.savePending = False
 
     def confirm(self, question):
-        reply = QtGui.QMessageBox.question(self, 'Confirmation Required', question, QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+        reply = QtWidgets.QMessageBox.question(self, 'Confirmation Required', question, QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
 
-        if reply == QtGui.QMessageBox.Yes:
+        if reply == QtWidgets.QMessageBox.Yes:
             return True
         else:
             return False
 
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     myWindow = AutoClicker(None)
     myWindow.show()
     app.exec_()

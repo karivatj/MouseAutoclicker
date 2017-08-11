@@ -2,9 +2,13 @@ import time
 import win32api
 import win32con
 
-from PyQt4 import QtCore, QtGui, uic
+from PyQt5 import QtCore, QtGui, uic 
+from PyQt5.QtCore import pyqtSignal
 
 class WorkThread(QtCore.QThread):
+    #signals
+    progress = pyqtSignal(int)
+
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
 
@@ -30,7 +34,8 @@ class WorkThread(QtCore.QThread):
     def runsequence(self):
         counter = 0
         while counter < len(self.sequence) and self.exiting != True:
-            self.emit(QtCore.SIGNAL("output(int)"), counter / 5)
+            self.progress.emit(int(counter / 5))
+            #self.emit(QtCore.SIGNAL("output(int)"), counter / 5)
 
             clicktype = self.sequence[counter][0]
             x = int(self.sequence[counter][1])

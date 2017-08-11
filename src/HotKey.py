@@ -1,7 +1,7 @@
 import re
 import Keys
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -14,9 +14,9 @@ from MainUI import *
 from HotkeyUI import *
 from AboutUI import *
 
-class HotKeyDialog(QtGui.QDialog, Ui_HotKey):
+class HotKeyDialog(QtWidgets.QDialog, Ui_HotKey):
     def __init__(self):
-        QtGui.QDialog.__init__(self)
+        QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
         self.hotkey = 'S'
         self.ctrlActivated = False
