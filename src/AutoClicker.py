@@ -81,18 +81,16 @@ class AutoClicker(QtWidgets.QMainWindow, Ui_AutoClicker_Window):
         self.actionAbout.triggered.connect(self.aboutActionTriggered)
         self.btnStartStopSequence.clicked.connect(self.buttonStartStopPressed)
         self.table.itemClicked.connect(self.cellClicked)
-        self.timer.timeout.connect(self.updateMouseCoordstoStatusBar)
-
         self.btnHotkey.clicked.connect(self.hotkeyChangeRequested)
 
         self.thread = WorkThread()
         self.thread.finished.connect(self.updateUI)
-        #self.thread.terminated.connect(self.updateUI)
         self.thread.progress.connect(self.highlightRow)
-        #self.connect(self.thread, QtCore.SIGNAL("output(int)"), self.highlightRow)
 
         self.updateHotkeyButton()
         
+        self.timer = QtCore.QTimer()        
+        self.timer.timeout.connect(self.updateMouseCoordstoStatusBar)
         self.timer.start(100)
 
     def __del__(self):
